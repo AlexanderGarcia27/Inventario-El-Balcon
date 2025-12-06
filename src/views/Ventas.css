@@ -1,0 +1,160 @@
+.ventas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #000000;
+  margin: 0;
+}
+
+.add-sale-button {
+  padding: 10px 20px;
+  background-color: #4285f4;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.add-sale-button:hover {
+  background-color: #357ae8;
+}
+
+.sales-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #000000;
+  margin: 0 0 20px 0;
+}
+
+.sales-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sales-table thead {
+  background-color: #f5f5f5;
+}
+
+.sales-table th {
+  padding: 12px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  color: #000000;
+  border-bottom: 2px solid #4285f4;
+}
+
+.sales-table td {
+
+/* Modal styles (shared with Inventario) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  background: #fff;
+  width: 320px;
+  max-width: 95%;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+.modal h2 {
+  margin: 0 0 12px 0;
+  text-align: center;
+}
+.modal label {
+  display: block;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #333;
+}
+.modal input, .modal select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  margin-top: 6px;
+}
+.modal-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+}
+.modal-row > div { flex: 1 }
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+.cancel-button {
+  background: #d9d9ff;
+  color: #000;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.save-button {
+  background: #3b57ff;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+  padding: 12px;
+  text-align: left;
+  font-size: 14px;
+  color: #000000;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.sales-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.empty-message {
+  text-align: center;
+  color: #666666;
+  padding: 40px;
+}
+
+.info-button {
+  padding: 6px 12px;
+  background-color: #4285f4;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.info-button:hover {
+  background-color: #357ae8;
+}
+
+

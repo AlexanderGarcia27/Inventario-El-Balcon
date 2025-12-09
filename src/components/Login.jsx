@@ -1,22 +1,38 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Swal from "sweetalert2";
 import './Login.css';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
+
     (async () => {
       const result = await login(username, password);
+      setLoading(false);
+
       if (result && result.success) {
-        navigate('/inicio');
+        Swal.fire({
+          icon: 'success',
+          title: 'Inicio de sesión exitoso',
+          text: 'Bienvenido!',
+          timer: 1500,
+          showConfirmButton: false
+        });
+
+        setTimeout(() => {
+          navigate('/inicio');
+        }, 1500);
       } else {
         setError(result?.message || 'Usuario o contraseña incorrectos');
       }
@@ -39,6 +55,7 @@ const Login = () => {
               onChange={(e) => setUsername(e.target.value)}
               required
               className="login-input"
+              disabled={loading}
             />
           </div>
 
@@ -51,13 +68,18 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="login-input"
+              disabled={loading}
             />
           </div>
 
           {error && <p className="error-message">{error}</p>}
 
-          <button type="submit" className="login-button">
-            Iniciar sesion
+          <button type="submit" className="login-button" disabled={loading}>
+            {loading ? (
+              <span className="spinner"></span>
+            ) : (
+              "Iniciar Sesión"
+            )}
           </button>
         </form>
       </div>
@@ -66,5 +88,3 @@ const Login = () => {
 };
 
 export default Login;
-
-

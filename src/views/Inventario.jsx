@@ -79,7 +79,7 @@ const Inventario = () => {
 
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:3000/productos/${id}`, {
+        const res = await fetch(`https://backend-inventario-balcon.onrender.com/productos/${id}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -137,7 +137,7 @@ const Inventario = () => {
     setAdding(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/productos', {
+      const res = await fetch('https://backend-inventario-balcon.onrender.com/productos', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -200,7 +200,7 @@ const Inventario = () => {
     setEditing(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3000/productos/${id}`, {
+      const res = await fetch(`https://backend-inventario-balcon.onrender.com/productos/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

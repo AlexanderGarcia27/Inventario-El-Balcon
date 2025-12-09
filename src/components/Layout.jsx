@@ -67,11 +67,6 @@ export const Header = ({ title, showSearch = false, showUser = true, actionButto
     <header className="page-header">
       <h1 className="page-title">{title}</h1>
       <div className="header-actions">
-        {showUser && user && (
-          <button className="user-button">
-            Usuario: {user.name || user.username}
-          </button>
-        )}
         <button className="logout-button" onClick={handleLogout}>
           Cerrar sesion
         </button>

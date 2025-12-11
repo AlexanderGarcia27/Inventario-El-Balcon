@@ -5,6 +5,7 @@ import './Layout.css';
 import InicioIcon from '../assets/Inicio.svg';
 import InventarioIcon from '../assets/inventario.svg';
 import VentasIcon from '../assets/ventas.png';
+// Asume que tienes un nuevo ícono para reportes (ejemplo: Reportes.svg)
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -43,6 +44,16 @@ const Layout = ({ children }) => {
             <img src={VentasIcon} alt="Ventas" className="nav-icon" />
             <span>Ventas</span>
           </Link>
+          {/* INICIO: NUEVO ENLACE A GANANCIAS */}
+          <Link
+            to="/ganancias"
+            className={`nav-link ${isActive('/ganancias') ? 'active' : ''}`}
+          >
+            {/* Asegúrate de que ReportesIcon apunte a un ícono válido */}
+            <img src={VentasIcon} alt="Ganancias" className="nav-icon" />
+            <span>Ganancias / Reportes</span>
+          </Link>
+          {/* FIN: NUEVO ENLACE */}
         </nav>
       </aside>
 
@@ -77,4 +88,3 @@ export const Header = ({ title, showSearch = false, showUser = true, actionButto
 };
 
 export default Layout;
-

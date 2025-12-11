@@ -2,7 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 import Layout, { Header } from '../components/Layout';
 import './Dashboard.css';
 
-// Chart.js
+// Importar useData para usar el estado global cacheado
+import { useData } from '../context/DataContext'; // <-- ¡NUEVA IMPORTACIÓN!
+
+// Chart.js imports (se mantienen igual)
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -19,9 +22,29 @@ import { Bar, Line } from 'react-chartjs-2';
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
+  // ❌ ELIMINAR: Estados locales de carga y datos (stats, ventas, productos)
+  /*
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [ventas, setVentas] = useState([]);
+  const [ventasLoading, setVentasLoading] = useState(true);
+  const [ventasError, setVentasError] = useState(null);
+  const [productos, setProductos] = useState([]);
+  */
+
+  // ✅ USAR ESTADOS GLOBALES DEL CONTEXTO
+  const {
+    stats,
+    sales: ventas, // ventas es el nombre que usamos aquí, pero viene de 'sales' en el Contexto
+    dataLoading: loading, // Unificamos loading para todos los datos
+    dataError: error      // Unificamos error para todos los datos
+  } = useData();
+
+  // Ya no necesitamos 'ventasLoading' y 'ventasError' por separado, 
+  // usamos 'loading' y 'error' del contexto.
+  const ventasLoading = loading;
+  const ventasError = error;
 
   const recentMovements = [
     {
@@ -32,93 +55,26 @@ const Dashboard = () => {
     }
   ];
 
-  const fetchTotals = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('https://backend-inventario-balcon.onrender.com/dashboard/totales', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      });
+  // ❌ ELIMINAR: Funciones fetch (fetchTotals, fetchVentas, fetchProductos)
+  /*
+  const fetchTotals = async () => { ... };
+  const fetchVentas = async () => { ... };
+  const fetchProductos = async () => { ... };
+  */
 
-      if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(txt || `Error ${res.status}`);
-      }
-
-      const data = await res.json();
-      setStats(data);
-    } catch (err) {
-      setError(err.message || 'Error cargando totales');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // ❌ ELIMINAR: useEffects para cargar datos
+  /*
   useEffect(() => {
     fetchTotals();
   }, []);
-
-  // --- Fetch ventas and productos to build charts ---
-  const [ventas, setVentas] = useState([]);
-  const [ventasLoading, setVentasLoading] = useState(true);
-  const [ventasError, setVentasError] = useState(null);
-  const [productos, setProductos] = useState([]);
-
-  const fetchVentas = async () => {
-    setVentasLoading(true);
-    setVentasError(null);
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('https://backend-inventario-balcon.onrender.com/ventas', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      });
-      if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(txt || `Error ${res.status}`);
-      }
-      const data = await res.json();
-      setVentas(Array.isArray(data) ? data : []);
-    } catch (err) {
-      setVentasError(err.message || 'Error cargando ventas');
-    } finally {
-      setVentasLoading(false);
-    }
-  };
-
-  const fetchProductos = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('https://backend-inventario-balcon.onrender.com/productos', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProductos(Array.isArray(data) ? data : []);
-      }
-    } catch (e) {
-      // ignore product errors for charts
-    }
-  };
-
   useEffect(() => {
     fetchVentas();
     fetchProductos();
   }, []);
+  */
+  // NOTA: La carga inicial ahora ocurre en DataContext al montar o en Login al iniciar sesión.
 
-  // Helper to parse date from venta
+  // Helper to parse date from venta (se mantiene igual)
   const parseVentaDate = (venta) => {
     const f = venta?.fecha ?? venta?.venta?.fecha ?? null;
     if (!f) return null;
@@ -129,7 +85,7 @@ const Dashboard = () => {
     return isNaN(d.getTime()) ? null : d;
   };
 
-  // Aggregate monthly sales totals
+  // Aggregate monthly sales totals (se mantiene igual, usa 'ventas' del contexto)
   const monthlySales = useMemo(() => {
     if (!ventas || ventas.length === 0) return { labels: [], totals: [] };
     const map = new Map();
@@ -149,7 +105,7 @@ const Dashboard = () => {
     };
   }, [ventas]);
 
-  // Aggregate top products by quantity sold
+  // Aggregate top products by quantity sold (se mantiene igual, usa 'ventas' del contexto)
   const topProducts = useMemo(() => {
     if (!ventas || ventas.length === 0) return { labels: [], counts: [] };
     const map = new Map();
@@ -173,21 +129,24 @@ const Dashboard = () => {
   return (
     <Layout>
       <Header title="Dashboard" showSearch={true} showUser={true} />
-      
+
       <div className="dashboard-content">
         <div className="stats-grid">
           <div className="stat-card">
             <h3 className="stat-label">Total productos</h3>
+            {/* Usa 'loading' del contexto */}
             <p className="stat-value">{loading ? 'Cargando...' : (error ? '—' : (totalProducts ?? '—'))}</p>
           </div>
 
           <div className="stat-card">
             <h3 className="stat-label">Existencias bajas (Menos de 10 productos)</h3>
+            {/* Usa 'loading' del contexto */}
             <p className="stat-value">{loading ? 'Cargando...' : (error ? '—' : (lowStock !== null ? `${lowStock} productos` : '—'))}</p>
           </div>
 
           <div className="stat-card">
             <h3 className="stat-label">Ventas (últ. 7 días)</h3>
+            {/* Usa 'loading' del contexto */}
             <p className="stat-value">{loading ? 'Cargando...' : (error ? '—' : `$${(Number(ventas7) || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`)}</p>
           </div>
         </div>
@@ -195,6 +154,7 @@ const Dashboard = () => {
         <div className="charts-row">
           <div className="chart-card">
             <h2 className="card-title">Ventas por mes</h2>
+            {/* Usa 'ventasLoading' y 'ventasError' (que vienen de 'loading' y 'error' del contexto) */}
             {ventasLoading ? (
               <p>Cargando ventas...</p>
             ) : ventasError ? (
@@ -224,37 +184,9 @@ const Dashboard = () => {
               />
             )}
           </div>
-
-          <div className="chart-card">
-            <h2 className="card-title">Productos más vendidos</h2>
-            {ventasLoading ? (
-              <p>Cargando ventas...</p>
-            ) : ventasError ? (
-              <p>Error cargando ventas: {ventasError}</p>
-            ) : topProducts.labels.length === 0 ? (
-              <p>No hay datos de productos vendidos</p>
-            ) : (
-              <Bar
-                data={{
-                  labels: topProducts.labels,
-                  datasets: [
-                    {
-                      label: 'Unidades vendidas',
-                      data: topProducts.counts,
-                      backgroundColor: 'rgba(54,162,235,0.6)'
-                    }
-                  ]
-                }}
-                options={{
-                  indexAxis: 'y',
-                  responsive: true,
-                  plugins: { legend: { display: false } }
-                }}
-              />
-            )}
-          </div>
         </div>
 
+        {/* Usa 'error' del contexto */}
         {error && <p className="error-text">Error: {error}</p>}
       </div>
     </Layout>
@@ -262,5 +194,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
-

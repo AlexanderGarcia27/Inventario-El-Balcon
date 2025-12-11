@@ -1,48 +1,51 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Swal from 'sweetalert2';
 import Layout from '../components/Layout';
 import './Inventario.css';
 
+// 1. Importar useData
+import { useData } from '../context/DataContext';
+
 const Inventario = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  
+
+  // 2. Consumir del contexto:
+  // - products: lista de productos cacheada.
+  // - dataLoading: estado de carga (para mostrar 'Cargando...').
+  // - dataError: estado de error.
+  // - refreshData: objeto que contiene las funciones para mutar/recargar.
+  const {
+    products,
+    dataLoading: loading,
+    dataError: loadError,
+    refreshData: { addProduct, updateProduct, deleteProduct, loadProducts }
+  } = useData();
+
+  // ❌ ELIMINAR: Estados locales de productos y carga
+  /*
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
+  */
 
+  // ❌ ELIMINAR: useEffect para la carga inicial (se hace en DataContext)
+  /*
   useEffect(() => {
     fetchProducts();
   }, []);
+  */
 
-  // Extraer fetchProducts para reutilizarlo (se llama después de crear producto)
-  const fetchProducts = async () => {
-    setLoading(true);
-    setLoadError(null);
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('https://backend-inventario-balcon.onrender.com/productos', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      });
+  // ❌ ELIMINAR: Función fetchProducts completa. Si necesitas forzar una recarga, 
+  // usarías loadProducts() del contexto, pero no es necesario aquí al inicio.
+  /*
+  const fetchProducts = async () => { ... };
+  */
 
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(errText || `Error ${res.status}`);
-      }
-
-      const data = await res.json();
-      setProducts(Array.isArray(data) ? data : []);
-    } catch (err) {
-      setLoadError(err.message || 'Error cargando productos');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const filteredProducts = products.filter((product) => {
+    // Aseguramos que 'products' es un array antes de usar filter
+    if (!Array.isArray(products)) return false;
+
     const nombre = (product.nombre || '').toString().toLowerCase();
     const codigo = (product.codigo || '').toString().toLowerCase();
     const categoria = (product.categoria || '').toString().toLowerCase();
@@ -50,15 +53,13 @@ const Inventario = () => {
     return nombre.includes(q) || codigo.includes(q) || categoria.includes(q);
   });
 
+  // ... handleAddProduct (se mantiene igual, solo llama al modal) ...
   const handleAddProduct = () => {
-    // Mostrar modal para agregar producto
     setShowAddModal(true);
   };
 
-  
-
+  // 3. Modificar handleDelete para usar deleteProduct del contexto
   const handleDelete = (product) => {
-    // Confirmar y eliminar en backend
     Swal.fire({
       title: 'Eliminar producto',
       text: `¿Estás seguro que deseas eliminar ${product.nombre}?`,
@@ -78,40 +79,25 @@ const Inventario = () => {
       }
 
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`https://backend-inventario-balcon.onrender.com/productos/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-          }
-        });
-
-        if (!res.ok) {
-          let err = 'Error eliminando producto';
-          try {
-            const errJson = await res.json();
-            if (errJson && errJson.message) err = errJson.message;
-          } catch (e) {}
-          Swal.fire('Error', err, 'error');
-          return;
-        }
-
-        await fetchProducts();
+        // ✅ USAR FUNCIÓN DEL CONTEXTO: deleteProduct
+        await deleteProduct(id);
         Swal.fire('Eliminado', 'Producto eliminado correctamente.', 'success');
       } catch (error) {
-        Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
+        // El error ya viene formateado desde deleteProduct
+        Swal.fire('Error', error.message || 'Error eliminando producto.', 'error');
       }
     });
   };
 
-  // Modal state
+  // Modales y estado (se mantienen igual)
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
-  const [addForm, setAddForm] = useState({ nombre: '', precio: '', stock: '', categoria: '' });
+
+  const [addForm, setAddForm] = useState({ nombre: '', precio: '', precioCompra: '', stock: '', categoria: '' });
   const [adding, setAdding] = useState(false);
-  const [editForm, setEditForm] = useState({ nombre: '', precio: '', stock: '', categoria: '' });
+
+  const [editForm, setEditForm] = useState({ nombre: '', precio: '', precioCompra: '', stock: '', categoria: '' });
   const [editing, setEditing] = useState(false);
 
   const handleAddFormChange = (e) => {
@@ -124,67 +110,49 @@ const Inventario = () => {
     setEditForm((p) => ({ ...p, [name]: value }));
   };
 
+  // 4. Modificar handleSaveAddProduct para usar addProduct del contexto
   const handleSaveAddProduct = async () => {
-    // Prepare payload according to backend
     const payload = {
       nombre: addForm.nombre,
       precio: Number(addForm.precio) || 0,
+      precioCompra: Number(addForm.precioCompra) || 0,
       stock: Number(addForm.stock) || 0,
-      // enviar categoria como cadena vacía si no está definida para evitar undefined
       categoria: addForm.categoria ?? ''
     };
 
     setAdding(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('https://backend-inventario-balcon.onrender.com/productos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify(payload)
-      });
+      // ✅ USAR FUNCIÓN DEL CONTEXTO: addProduct
+      await addProduct(payload);
 
-      if (!res.ok) {
-        let err = 'Error creando producto';
-        try {
-          const errJson = await res.json();
-          if (errJson && errJson.message) err = errJson.message;
-        } catch (e) {}
-        Swal.fire('Error', err, 'error');
-        return;
-      }
-
-      const created = await res.json();
-      // Refrescar lista desde servidor para evitar inconsistencias en la respuesta
-      await fetchProducts();
       Swal.fire('Creado', 'Producto creado correctamente.', 'success');
       setShowAddModal(false);
-      setAddForm({ nombre: '', precio: '', stock: '', categoria: '' });
+      setAddForm({ nombre: '', precio: '', precioCompra: '', stock: '', categoria: '' });
     } catch (error) {
-      Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
+      // El error ya viene formateado desde addProduct
+      Swal.fire('Error', error.message || 'Error creando producto.', 'error');
     } finally {
       setAdding(false);
     }
   };
 
+  // ... handleEdit (se mantiene igual, solo carga el formulario) ...
   const handleEdit = (product) => {
-    // Prefill edit form with product data
     setEditProduct(product);
     setEditForm({
       nombre: product.nombre ?? '',
       precio: product.precio ?? '',
+      precioCompra: product.precioCompra ?? '',
       stock: product.stock ?? product.cantidad ?? '',
       categoria: product.categoria ?? ''
     });
     setShowEditModal(true);
   };
 
+  // 5. Modificar handleSaveEditProduct para usar updateProduct del contexto
   const handleSaveEditProduct = async () => {
     if (!editProduct) return;
     const id = editProduct.id ?? editProduct._id ?? editProduct.codigo ?? null;
-    // Prefer explicit id field from backend (Firebase id is in `id` in your example)
     if (!id) {
       Swal.fire('Error', 'No se encontró el id del producto para actualizar.', 'error');
       return;
@@ -193,39 +161,22 @@ const Inventario = () => {
     const payload = {
       nombre: editForm.nombre,
       precio: Number(editForm.precio) || 0,
+      precioCompra: Number(editForm.precioCompra) || 0,
       stock: Number(editForm.stock) || 0,
       categoria: editForm.categoria ?? ''
     };
 
     setEditing(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`https://backend-inventario-balcon.onrender.com/productos/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify(payload)
-      });
+      // ✅ USAR FUNCIÓN DEL CONTEXTO: updateProduct
+      await updateProduct(id, payload);
 
-      if (!res.ok) {
-        let err = 'Error actualizando producto';
-        try {
-          const errJson = await res.json();
-          if (errJson && errJson.message) err = errJson.message;
-        } catch (e) {}
-        Swal.fire('Error', err, 'error');
-        return;
-      }
-
-      // Refresh list from server
-      await fetchProducts();
       Swal.fire('Actualizado', 'Producto actualizado correctamente.', 'success');
       setShowEditModal(false);
       setEditProduct(null);
     } catch (error) {
-      Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
+      // El error ya viene formateado desde updateProduct
+      Swal.fire('Error', error.message || 'Error actualizando producto.', 'error');
     } finally {
       setEditing(false);
     }
@@ -233,7 +184,8 @@ const Inventario = () => {
 
   return (
     <Layout>
-      {/* Add Product Modal */}
+      {/* Modales (sin cambios relevantes en la estructura HTML) */}
+      {/* ... */}
       {showAddModal && (
         <div className="modal-backdrop">
           <div className="modal">
@@ -242,16 +194,25 @@ const Inventario = () => {
             <input name="nombre" value={addForm.nombre} onChange={handleAddFormChange} type="text" />
             <div className="modal-row">
               <div>
-                <label>Precio</label>
+                <label>Precio Venta</label>
                 <input name="precio" value={addForm.precio} onChange={handleAddFormChange} type="number" />
               </div>
+              <div>
+                <label>Precio Compra</label>
+                <input name="precioCompra" value={addForm.precioCompra} onChange={handleAddFormChange} type="number" />
+              </div>
+            </div>
+            <div className="modal-row">
               <div>
                 <label>Stock</label>
                 <input name="stock" value={addForm.stock} onChange={handleAddFormChange} type="number" />
               </div>
+              <div>
+                <label>Categoria</label>
+                <input name="categoria" value={addForm.categoria} onChange={handleAddFormChange} type="text" />
+              </div>
             </div>
-            <label>Categoria</label>
-            <input name="categoria" value={addForm.categoria} onChange={handleAddFormChange} type="text" />
+
             <div className="modal-actions">
               <button className="cancel-button" onClick={() => setShowAddModal(false)}>Cancelar</button>
               <button className="save-button" onClick={handleSaveAddProduct} disabled={adding}>{adding ? 'Guardando...' : 'Guardar'}</button>
@@ -260,7 +221,6 @@ const Inventario = () => {
         </div>
       )}
 
-      {/* Edit Product Modal */}
       {showEditModal && (
         <div className="modal-backdrop">
           <div className="modal">
@@ -269,16 +229,24 @@ const Inventario = () => {
             <input name="nombre" value={editForm.nombre} onChange={handleEditFormChange} type="text" />
             <div className="modal-row">
               <div>
-                <label>Precio</label>
+                <label>Precio Venta</label>
                 <input name="precio" value={editForm.precio} onChange={handleEditFormChange} type="number" />
               </div>
+              <div>
+                <label>Precio Compra</label>
+                <input name="precioCompra" value={editForm.precioCompra} onChange={handleEditFormChange} type="number" />
+              </div>
+            </div>
+            <div className="modal-row">
               <div>
                 <label>Stock</label>
                 <input name="stock" value={editForm.stock} onChange={handleEditFormChange} type="number" />
               </div>
+              <div>
+                <label>Categoria</label>
+                <input name="categoria" value={editForm.categoria} onChange={handleEditFormChange} type="text" />
+              </div>
             </div>
-            <label>Categoria</label>
-            <input name="categoria" value={editForm.categoria} onChange={handleEditFormChange} type="text" />
             <div className="modal-actions">
               <button className="cancel-button" onClick={() => setShowEditModal(false)}>Cancelar</button>
               <button className="save-button" onClick={handleSaveEditProduct} disabled={editing}>{editing ? 'Guardando...' : 'Guardar'}</button>
@@ -286,6 +254,8 @@ const Inventario = () => {
           </div>
         </div>
       )}
+      {/* Fin Modales */}
+
       <div className="inventario-header">
         <h1 className="page-title">Inventario</h1>
         <div className="header-actions">
@@ -300,6 +270,7 @@ const Inventario = () => {
             Agregar producto
           </button>
         </div>
+
       </div>
 
       <div className="products-card">
@@ -309,51 +280,62 @@ const Inventario = () => {
             <tr>
               <th>Codigo</th>
               <th>Nombre</th>
-              <th>Precio</th>
+              <th>Precio Venta</th>
+              <th>Precio Compra</th>
+              <th>Ganancia Bruta</th>
               <th>Categoria</th>
               <th>Stock</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {loading ? (
+            {/* Usamos 'loading' y 'loadError' del contexto */}
+            {loading && products.length === 0 ? (
               <tr>
-                <td colSpan="6">Cargando productos...</td>
+                <td colSpan="8">Cargando productos...</td>
               </tr>
             ) : loadError ? (
               <tr>
-                <td colSpan="6">Error: {loadError}</td>
+                <td colSpan="8">Error: {loadError}</td>
               </tr>
             ) : filteredProducts.length === 0 ? (
               <tr>
-                <td colSpan="6">No hay productos</td>
+                <td colSpan="8">No hay productos</td>
               </tr>
             ) : (
-              filteredProducts.map((product, index) => (
-                <tr key={product.id ?? index}>
-                  <td>{product.codigo}</td>
-                  <td>{product.nombre}</td>
-                  <td>${product.precio}</td>
-                  <td>{product.categoria}</td>
-                  <td>{product.stock ?? product.cantidad ?? 0}</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button
-                        className="delete-button"
-                        onClick={() => handleDelete(product)}
-                      >
-                        Eliminar
-                      </button>
-                      <button
-                        className="edit-button"
-                        onClick={() => handleEdit(product)}
-                      >
-                        Editar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+              filteredProducts.map((product, index) => {
+                const precioVenta = Number(product.precio) || 0;
+                const precioCosto = Number(product.precioCompra) || 0;
+                const gananciaBruta = precioVenta - precioCosto;
+
+                return (
+                  <tr key={product.id ?? index}>
+                    <td>{product.codigo}</td>
+                    <td>{product.nombre}</td>
+                    <td>${precioVenta.toFixed(2)}</td>
+                    <td>${precioCosto.toFixed(2)}</td>
+                    <td>${gananciaBruta.toFixed(2)}</td>
+                    <td>{product.categoria}</td>
+                    <td>{product.stock ?? product.cantidad ?? 0}</td>
+                    <td>
+                      <div className="action-buttons">
+                        <button
+                          className="delete-button"
+                          onClick={() => handleDelete(product)}
+                        >
+                          Eliminar
+                        </button>
+                        <button
+                          className="edit-button"
+                          onClick={() => handleEdit(product)}
+                        >
+                          Editar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })
             )}
           </tbody>
         </table>
@@ -363,4 +345,3 @@ const Inventario = () => {
 };
 
 export default Inventario;
-

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useData } from '../context/DataContext'; // <-- 1. Importar useData
 import Swal from "sweetalert2";
 import './Login.css';
 
@@ -9,7 +10,10 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
   const { login } = useAuth();
+  const { refreshData } = useData(); // <-- 2. Obtener refreshData del contexto
+
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
@@ -22,6 +26,13 @@ const Login = () => {
       setLoading(false);
 
       if (result && result.success) {
+
+        // 3. LLAMADA CLAVE: Al iniciar sesión con éxito, forzamos la carga 
+        // inicial de todos los datos necesarios para la aplicación.
+        // Esto evita que los componentes Dashboard/Inventario/Ventas tengan que hacer
+        // la llamada la primera vez.
+        await refreshData.loadAllData();
+
         Swal.fire({
           icon: 'success',
           title: 'Inicio de sesión exitoso',
@@ -44,7 +55,7 @@ const Login = () => {
       <div className="login-card">
         <h1 className="login-title">Sistema de inventario</h1>
         <p className="login-subtitle">Administra productos, entradas, salidas y ventas</p>
-        
+
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
             <label htmlFor="username">Usuario</label>

@@ -7,6 +7,7 @@
   gap: 15px;
 }
 
+
 .page-title {
   font-size: 24px;
   font-weight: bold;
@@ -63,68 +64,81 @@
 
 .sales-table td {
 
-/* Modal styles (shared with Inventario) */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-.modal {
-  background: #fff;
-  width: 320px;
-  max-width: 95%;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-}
-.modal h2 {
-  margin: 0 0 12px 0;
-  text-align: center;
-}
-.modal label {
-  display: block;
-  margin-top: 10px;
-  font-size: 13px;
-  color: #333;
-}
-.modal input, .modal select {
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-  margin-top: 6px;
-}
-.modal-row {
-  display: flex;
-  gap: 12px;
-  margin-top: 6px;
-}
-.modal-row > div { flex: 1 }
-.modal-actions {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 16px;
-}
-.cancel-button {
-  background: #d9d9ff;
-  color: #000;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-.save-button {
-  background: #3b57ff;
-  color: #fff;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-}
+  /* Modal styles (shared with Inventario) */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .modal {
+    background: #fff;
+    width: 320px;
+    max-width: 95%;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  }
+
+  .modal h2 {
+    margin: 0 0 12px 0;
+    text-align: center;
+  }
+
+  .modal label {
+    display: block;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #333;
+  }
+
+  .modal input,
+  .modal select {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    margin-top: 6px;
+  }
+
+  .modal-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 6px;
+  }
+
+  .modal-row>div {
+    flex: 1
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+  }
+
+  .cancel-button {
+    background: #d9d9ff;
+    color: #000;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .save-button {
+    background: #3b57ff;
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
   padding: 12px;
   text-align: left;
   font-size: 14px;
@@ -158,3 +172,425 @@
 }
 
 
+/* ... otros estilos ... */
+
+/* Estilos para el modal (Ajuste de altura y scroll) */
+.modal {
+  background: #fff;
+  width: 320px;
+  /* Establece una altura máxima para el modal */
+  max-height: 90vh;
+  /* Hace que el contenido interno haga scroll si excede el max-height */
+  overflow-y: auto;
+  max-width: 95%;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* --- Estilos para Custom Select --- */
+
+/* Contenedor principal para posicionar la lista */
+.custom-select-container {
+  position: relative;
+  width: 100%;
+  margin-top: 6px;
+  margin-bottom: 10px;
+}
+
+/* El elemento visible que se hace clic */
+.select-display {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+  background-color: #fff;
+  /* Indicador de que es desplegable (opcional) */
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="#000000"><polygon points="0,3 10,3 5,9"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+
+/* El dropdown (la lista de opciones) */
+.select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1001;
+  width: 100%;
+  /* CLAVE: Ocupa el 100% del contenedor para evitar desbordamiento lateral */
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0 0;
+
+  /* Propiedades para controlar el desbordamiento de contenido (scroll) */
+  max-height: 200px;
+  /* Limita la altura de la lista */
+  overflow-y: auto;
+  /* Habilita el scroll vertical */
+}
+
+.select-dropdown li {
+  padding: 10px;
+  cursor: pointer;
+  white-space: normal;
+  /* CLAVE: Permite que el texto largo se ajuste a varias líneas */
+  word-break: break-word;
+  border-bottom: 1px solid #eee;
+}
+
+.select-dropdown li:last-child {
+  border-bottom: none;
+}
+
+.select-dropdown li:hover,
+.select-dropdown li.selected {
+  background-color: #e6e6e6;
+}
+
+/* ... Otros estilos de modal ... */
+/* Ventas.css (Agregar al final) */
+
+.chart-container {
+  padding: 20px;
+  background-color: #fff;
+  /* Fondo blanco si la tarjeta de ventas es blanca */
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  /* Separación de la tabla de ventas */
+}
+
+/* Opcional: si quieres que el contenedor de la gráfica se centre */
+.chart-container div {
+  /* Esto aplica al div interno donde se renderiza la gráfica */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ==================================== */
+/* MODAL STYLES (Asegura el ancho) */
+/* ==================================== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #fff;
+  /* Ancho fijo para el modal */
+  width: 320px;
+  max-width: 95%;
+  /* Permite scroll vertical si el contenido (incluyendo el dropdown) es muy grande */
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* ... otros estilos de modal ... */
+
+/* ==================================== */
+/* ESTILOS PARA CUSTOM SELECT */
+/* ==================================== */
+
+.custom-select-container {
+  position: relative;
+  width: 100%;
+  margin-top: 6px;
+  margin-bottom: 10px;
+}
+
+.select-display {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+  background-color: #fff;
+  /* Ajuste de texto para el display si el producto es muy largo */
+  white-space: normal;
+  word-break: break-word;
+}
+
+.select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1001;
+  width: 100%;
+  /* CLAVE: Ocupa el 100% del contenedor para evitar desbordamiento lateral */
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0 0;
+
+  /* Propiedades para controlar el desbordamiento de contenido (scroll) */
+  max-height: 200px;
+  /* Limita la altura de la lista */
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Evita scroll horizontal en la lista */
+}
+
+.select-dropdown li {
+  padding: 10px;
+  cursor: pointer;
+  /* CLAVE: Permite que el texto largo se ajuste a varias líneas */
+  white-space: normal;
+  word-break: break-word;
+  border-bottom: 1px solid #eee;
+}
+
+.select-dropdown li:last-child {
+  border-bottom: none;
+}
+
+.select-dropdown li:hover,
+.select-dropdown li.selected {
+  background-color: #e6e6e6;
+}
+
+/* ... (Estilos de .modal, .custom-select-container, etc., que ya tenías) ... */
+
+/* --- Estilos para la Nueva Tabla de Corte de Caja/Ganancia Diaria --- */
+
+.daily-gain-table {
+  width: 50%;
+  max-width: 400px;
+  margin-top: 15px;
+  margin-bottom: 20px;
+  border-collapse: collapse;
+}
+
+.daily-gain-table thead {
+  background-color: #f0f8ff;
+}
+
+.daily-gain-table th {
+  padding: 10px 15px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  color: #000000;
+  border-bottom: 2px solid #a0c4ff;
+}
+
+.daily-gain-table td {
+  padding: 10px 15px;
+  text-align: left;
+  font-size: 14px;
+  color: #000000;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.daily-gain-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+@media (max-width: 768px) {
+  .daily-gain-table {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* ================================================= */
+/* ESTILOS ESPECÍFICOS DEL MODAL DE VENTA (CARRITO) */
+/* ================================================= */
+
+/* Contenedor principal del modal para vista de carrito */
+.sale-modal-multi {
+  width: 90%;
+  max-width: 900px;
+  /* Más ancho para el carrito */
+  min-height: 400px;
+}
+
+.cart-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  /* 1/3 para agregar, 2/3 para resumen/pago */
+  gap: 30px;
+  margin-top: 15px;
+}
+
+/* Sección de Agregar/Editar Artículo */
+.add-item-section {
+  padding: 15px;
+  border-right: 1px solid #e0e0e0;
+}
+
+.add-item-section h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #4285f4;
+  /* Color primario */
+}
+
+/* Botones de acción principal en la sección de agregar/editar */
+.add-to-cart-button,
+.cancel-edit-button {
+  /* Añadiremos esta clase al botón de Cancelar Edición */
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-top: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.add-to-cart-button {
+  background-color: #3b57ff;
+  /* Usamos el color de .save-button */
+  color: #fff;
+  border: none;
+}
+
+.add-to-cart-button:hover:not(:disabled) {
+  background-color: #354de8;
+}
+
+.cancel-button.alt-secondary {
+  /* Estilo específico para Cancelar Edición */
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  margin-top: 10px;
+}
+
+.cancel-button.alt-secondary:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+
+/* Sección de Resumen del Carrito y Pago */
+.cart-summary-section {
+  padding: 15px 0;
+}
+
+.cart-summary-section h3 {
+  color: #000000;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.cart-list {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 5px;
+  margin-bottom: 15px;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 14px;
+}
+
+.cart-item.editing {
+  background-color: #fffbe6;
+  /* Color para resaltar el ítem que se está editando */
+  border-left: 3px solid #ffc107;
+}
+
+.cart-item span:first-child {
+  flex-grow: 1;
+}
+
+.cart-item span:nth-child(2) {
+  font-weight: bold;
+  min-width: 60px;
+  text-align: right;
+}
+
+/* Botón de Editar Item */
+.edit-item-button {
+  background-color: #4285f4;
+  /* Color primario azul */
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: background-color 0.3s;
+  line-height: 1;
+  /* Para alinear mejor el emoji o texto */
+}
+
+.edit-item-button:hover:not(:disabled) {
+  background-color: #357ae8;
+}
+
+.edit-item-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Botón de Eliminar Item */
+.remove-item-button {
+  background-color: #dc3545;
+  /* Rojo de peligro */
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: 5px;
+  transition: background-color 0.3s;
+}
+
+.remove-item-button:hover {
+  background-color: #c82333;
+}
+
+/* Detalles de Pago */
+.payment-details {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.total-label {
+  font-size: 18px;
+  color: #000000;
+  margin-bottom: 15px;
+}
+
+/* Responsividad para el modal (opcional, pero recomendado) */
+@media (max-width: 768px) {
+  .cart-grid {
+    grid-template-columns: 1fr;
+    /* Una columna en móviles */
+  }
+
+  .add-item-section {
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 20px;
+  }
+}
